@@ -66,7 +66,7 @@ const addToList = (notion, item, articleId) => {
         object: "block",
         type: "to_do",
         to_do: {
-          text: [
+          rich_text: [
             {
               type: "text",
               text: {
@@ -86,7 +86,6 @@ module.exports.handler = async (event, context) => {
   let response = {};
   const stateSession = state && state.session
   const stateUser = state && state.user
-
   const userTells = request.original_utterance;
   const previousStep = stateSession && stateSession.previousStep;
   const userTellsOnPreviousStep = stateSession && stateSession.previousVal;
@@ -182,7 +181,7 @@ module.exports.handler = async (event, context) => {
           };
 
           const user_state_update = {
-            token: userTellsOnPreviousStep && userTellsOnPreviousStep.token,
+            token: userTellsOnPreviousStep,
           };
 
           return {
