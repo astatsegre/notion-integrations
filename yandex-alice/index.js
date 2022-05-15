@@ -13,6 +13,7 @@ const HELP_TXT =
   "Через меня можно голосом наполнять списки в Notion.\n" +
   'Чтобы не заходя в навык добавить в список, например, молоко, скажите Алисе: "Попроси добавить в список молоко"\n' +
   "Чтобы сбросить настройки навыка, пришлите мне слово reset с маленькой буквы.\n" +
+  'Отправьте "Покажи настройки", чтобы посмотреть сохраненный токен и id-заметки.\n' +
   "Если есть непреодолимые проблемы, напишите мне в телеграм: @novitckas";
 const HELP_TXT_DURING_SETTING_UP = 'Через меня можно голосом наполнять списки в Notion. Но для начала работы меня нужно настроить. Для настройки вам понадобится аккаунт в Notion.\n' +
   'Если есть непреодолимые проблемы, напишите мне в телеграм: @novitckas \n\n' +
@@ -111,6 +112,14 @@ module.exports.handler = async (event, context) => {
     };
     return { version, session, response, session_state, user_state_update };
   }
+  if (userTells.toLowerCase() === 'покажи настройки') {
+    response.text = `Токен: ${token}\n\nid-заметки: ${articleId}`
+    const session_state = {
+      previousStep,
+    };
+    return { version, session, response, session_state };
+  }
+
   // Навык НЕ настроен (отсутствуют токен и id заметки).
   if (!token|| !articleId) {
     if (userTells.toLowerCase() === "помощь" || userTells.toLowerCase().includes('что ты умеешь')) {
@@ -331,5 +340,13 @@ module.exports.handler = async (event, context) => {
   return addToList(notion, request.original_utterance, articleId).then(() => {
     response.text = `Добавила ${request.original_utterance} в список`;
     return { version, session, response };
+  }).catch((error) => {
+    if (error && error.message) {
+      response.text = `Notion вернул ошибку: "${error.message}"`
+    } else {
+      response.text = `Произошла какая-то ошибка и Notion не вернул никакого сообщения. Попробуйте задать вопрос в этом телеграм-канале: https://t.me/aliceAddToNotion`
+    }
+    return { version, session, response };
+
   });
 };
